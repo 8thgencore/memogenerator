@@ -60,7 +60,6 @@ class EditTextBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _EditTextBarState extends State<EditTextBar> {
-
   final controller = TextEditingController();
 
   @override
@@ -73,7 +72,9 @@ class _EditTextBarState extends State<EditTextBar> {
         builder: (context, snapshot) {
           final MemeText? selectedMemeText = snapshot.hasData ? snapshot.data : null;
           if (selectedMemeText?.text != controller.text) {
-            controller.text = selectedMemeText?.text ?? "";
+            final newText = selectedMemeText?.text ?? "";
+            controller.text = newText;
+            controller.selection = TextSelection.collapsed(offset: newText.length);
           }
           return TextField(
             enabled: selectedMemeText != null,
@@ -96,8 +97,8 @@ class _EditTextBarState extends State<EditTextBar> {
 
   @override
   void dispose() {
-     controller.dispose();
-     super.dispose();
+    controller.dispose();
+    super.dispose();
   }
 }
 
@@ -133,7 +134,6 @@ class _CreateMemePageContentState extends State<CreateMemePageContent> {
       ],
     );
   }
-
 }
 
 class MemeCanvasWidget extends StatelessWidget {
@@ -157,14 +157,97 @@ class MemeCanvasWidget extends StatelessWidget {
             stream: bloc.observeMemeTexts(),
             builder: (context, snapshot) {
               final memeTexts = snapshot.hasData ? snapshot.data! : const <MemeText>[];
-              return Column(
-                children: memeTexts.map((memeText) => Text(memeText.text)).toList(),
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return Stack(
+                    children: memeTexts.map((memeText) {
+                      return DraggableMemeText(
+                        memeText: memeText,
+                        parentConstraints: constraints,
+                      );
+                    }).toList(),
+                  );
+                },
               );
             },
           ),
         ),
       ),
     );
+  }
+}
+
+class DraggableMemeText extends StatefulWidget {
+  final MemeText memeText;
+  final BoxConstraints parentConstraints;
+
+  const DraggableMemeText({
+    Key? key,
+    required this.memeText,
+    required this.parentConstraints,
+  }) : super(key: key);
+
+  @override
+  _DraggableMemeTextState createState() => _DraggableMemeTextState();
+}
+
+class _DraggableMemeTextState extends State<DraggableMemeText> {
+  double top = 0;
+  double left = 0;
+  final double padding = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    return Positioned(
+      top: top,
+      left: left,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => bloc.selectMemeText(widget.memeText.id),
+        onPanUpdate: (details) {
+          setState(() {
+            left = calculateLeft(details);
+            top = calculateTop(details);
+          });
+        },
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: widget.parentConstraints.maxWidth,
+            maxHeight: widget.parentConstraints.maxWidth,
+          ),
+          padding: EdgeInsets.all(padding),
+          color: Colors.black12,
+          child: Text(
+            widget.memeText.text,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.black, fontSize: 24),
+          ),
+        ),
+      ),
+    );
+  }
+
+  double calculateTop(DragUpdateDetails details) {
+    final rawTop = top + details.delta.dy;
+    if (rawTop < 0) {
+      return 0;
+    }
+    if (rawTop > widget.parentConstraints.maxHeight - padding * 2 - 24) {
+      return widget.parentConstraints.maxHeight - padding * 2 - 24;
+    }
+    return rawTop;
+  }
+
+  double calculateLeft(DragUpdateDetails details) {
+    final rawLeft = left + details.delta.dx;
+    if (rawLeft < 0) {
+      return 0;
+    }
+    if (rawLeft > widget.parentConstraints.maxWidth - padding * 2 - 10) {
+      return widget.parentConstraints.maxWidth - padding * 2 - 10;
+    }
+    return rawLeft;
   }
 }
 
@@ -177,6 +260,7 @@ class AddNewMemeTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => bloc.addNewText(),
       child: Center(
         child: Padding(
