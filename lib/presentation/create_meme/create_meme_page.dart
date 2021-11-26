@@ -227,14 +227,19 @@ class BottomMemeText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      alignment: Alignment.centerLeft,
-      color: item.selected ? AppColors.darkGrey16 : null,
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: Text(
-        item.memeText.text,
-        style: TextStyle(color: AppColors.darkGrey, fontSize: 16),
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => bloc.selectMemeText(item.memeText.id),
+      child: Container(
+        height: 48,
+        alignment: Alignment.centerLeft,
+        color: item.selected ? AppColors.darkGrey16 : null,
+        padding: EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+          item.memeText.text,
+          style: TextStyle(color: AppColors.darkGrey, fontSize: 16),
+        ),
       ),
     );
   }
