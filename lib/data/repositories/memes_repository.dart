@@ -18,14 +18,14 @@ class MemesRepository {
   // from Shared Preference to jsonString. Add new element to jsonString
   Future<bool> addToMemes(final Meme newMeme) async {
     final memes = await getMemes();
-    memes.removeWhere((meme) => meme.id == newMeme.id);
-    memes.add(newMeme);
+    final memeIndex = memes.indexWhere((meme) => meme.id == newMeme.id);
+    if (memeIndex == -1) {
+      memes.add(newMeme);
+    } else {
+      memes.removeAt(memeIndex);
+      memes.insert(memeIndex, newMeme);
+    }
     return _setMemes(memes);
-
-    // last
-    // final rawMemes = await spData.getMemes();
-    // rawMemes.add(json.encode(meme.toJson()));
-    // return _setRawMemes(rawMemes);
   }
 
   // delete from list
