@@ -264,15 +264,16 @@ class MemeCanvasWidget extends StatelessWidget {
           child: Stack(
             children: [
               StreamBuilder<String?>(
-                stream: bloc.observeMemePath(),
-                builder: (context, snapshot) {
-                  final path = snapshot.hasData ? snapshot.data : null;
-                  if (path == null) {
-                    return Container(color: Colors.white,);
-                  }
-                  return Image.file(File(path));
-                }
-              ),
+                  stream: bloc.observeMemePath(),
+                  builder: (context, snapshot) {
+                    final path = snapshot.hasData ? snapshot.data : null;
+                    if (path == null) {
+                      return Container(
+                        color: Colors.white,
+                      );
+                    }
+                    return Image.file(File(path));
+                  }),
               StreamBuilder<List<MemeTextWithOffset>>(
                 initialData: const <MemeTextWithOffset>[],
                 stream: bloc.observeMemeTextWithOffsets(),
@@ -334,6 +335,8 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
   @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    bloc.changeMemeTextOffset(widget.memeTextWithOffset.id, Offset(left, top));
+
     return Positioned(
       top: top,
       left: left,
