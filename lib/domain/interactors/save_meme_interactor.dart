@@ -54,6 +54,7 @@ class SaveMemeInteractor {
 
     if (oldFileWithTheSameName == null) {
       await tempFile.copy(newImagePath);
+      return newImagePath;
     }
 
     final oldFileLength = await (oldFileWithTheSameName as File).length();
