@@ -89,7 +89,7 @@ class SaveMemeInteractor {
       final correctedNewImagePath =
           "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$extension";
       await tempFile.copy(correctedNewImagePath);
-      return newImagePath;
+      return correctedNewImagePath;
     } else {
       // get suffixNumber
       final suffixNumberString = imageNameWithoutExtension.substring(indexOfLastUnderscore + 1);
@@ -99,7 +99,7 @@ class SaveMemeInteractor {
         final correctedNewImagePath =
             "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$extension";
         await tempFile.copy(correctedNewImagePath);
-        return newImagePath;
+        return correctedNewImagePath;
       } else {
         // increment suffixNumber
         final imageNameWithoutSuffix =
@@ -108,7 +108,7 @@ class SaveMemeInteractor {
             "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutSuffix}_${suffixNumber + 1}$extension";
         await tempFile.copy(correctedNewImagePath);
 
-        return newImagePath;
+        return correctedNewImagePath;
       }
     }
   }
