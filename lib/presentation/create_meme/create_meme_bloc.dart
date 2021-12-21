@@ -118,6 +118,7 @@ class CreateMemeBloc {
         .saveMeme(
           id: id,
           textWithPositions: textWithPositions,
+          screenshotController: screenshotControllerSubject.value,
           imagePath: memePathSubject.value,
         )
         .asStream()
