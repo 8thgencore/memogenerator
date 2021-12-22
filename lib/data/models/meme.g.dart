@@ -7,11 +7,11 @@ part of 'meme.dart';
 // **************************************************************************
 
 Meme _$MemeFromJson(Map<String, dynamic> json) => Meme(
-      memePath: json['meme_path'] as String?,
       id: json['id'] as String,
       texts: (json['texts'] as List<dynamic>)
           .map((e) => TextWithPosition.fromJson(e as Map<String, dynamic>))
           .toList(),
+      memePath: json['meme_path'] as String?,
     );
 
 Map<String, dynamic> _$MemeToJson(Meme instance) => <String, dynamic>{

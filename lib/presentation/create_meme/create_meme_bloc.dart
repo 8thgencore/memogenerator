@@ -35,7 +35,6 @@ class CreateMemeBloc {
   final String id;
 
   CreateMemeBloc({final String? id, final String? selectedMemePath}) : this.id = id ?? Uuid().v4() {
-    print("Got id: $id");
     memePathSubject.add(selectedMemePath);
     _subscribeToNewMemeTextOffset();
     _subscribeToExistentMeme();
@@ -48,7 +47,7 @@ class CreateMemeBloc {
           return;
         }
         final memeTexts = meme.texts.map((textWithPosition) {
-          return MemeText(id: textWithPosition.id, text: textWithPosition.text);
+          return MemeText.createFromTextWithPosition(textWithPosition);
         }).toList();
         final memeTextOffsets = meme.texts.map((textWithPosition) {
           return MemeTextOffset(
@@ -100,6 +99,17 @@ class CreateMemeBloc {
         );
   }
 
+  void changeFontSetting(final String textId, final Color color, final double fontSize) {
+    final copiedList = [...memeTextsSubject.value];
+    final oldMemeText = copiedList.firstWhereOrNull((memeText) => memeText.id == textId);
+    if (oldMemeText == null) {
+      return;
+    }
+    copiedList.remove(oldMemeText);
+    copiedList.add(oldMemeText.copyWithChangedFontSettings(color, fontSize));
+    memeTextsSubject.add(copiedList);
+  }
+
   void saveMeme() {
     final memeTexts = memeTextsSubject.value;
     final memeTextOffsets = memeTextOffsetsSubject.value;
@@ -111,7 +121,13 @@ class CreateMemeBloc {
         top: memeTextPosition?.offset.dy ?? 0,
         left: memeTextPosition?.offset.dx ?? 0,
       );
-      return TextWithPosition(id: memeText.id, text: memeText.text, position: position);
+      return TextWithPosition(
+        id: memeText.id,
+        text: memeText.text,
+        position: position,
+        color: memeText.color,
+        fontSize: memeText.fontSize,
+      );
     }).toList();
 
     saveMemeSubscription = SaveMemeInteractor.getInstance()
@@ -136,16 +152,13 @@ class CreateMemeBloc {
 
   void _changeMemeTextOffsetInternal(final MemeTextOffset newMemeTextOffset) {
     final copiedMemeTextOffsets = [...memeTextOffsetsSubject.value];
-
     final currentMemeTextOffset = copiedMemeTextOffsets
         .firstWhereOrNull((memeTextOffset) => memeTextOffset.id == newMemeTextOffset.id);
     if (currentMemeTextOffset != null) {
       copiedMemeTextOffsets.remove(currentMemeTextOffset);
     }
-
     copiedMemeTextOffsets.add(newMemeTextOffset);
     memeTextOffsetsSubject.add(copiedMemeTextOffsets);
-    print("Got new offset: $newMemeTextOffset");
   }
 
   void addNewText() {
@@ -160,8 +173,9 @@ class CreateMemeBloc {
     if (index == -1) {
       return;
     }
+    final oldMemeText = copiedList[index];
     copiedList.removeAt(index);
-    copiedList.insert(index, MemeText(id: id, text: text));
+    copiedList.insert(index, oldMemeText.copyWithChangedText(text));
     memeTextsSubject.add(copiedList);
   }
 
@@ -187,8 +201,7 @@ class CreateMemeBloc {
           return element.id == memeText.id;
         });
         return MemeTextWithOffset(
-          id: memeText.id,
-          text: memeText.text,
+          memeText: memeText,
           offset: memeTextOffset?.offset,
         );
       }).toList();

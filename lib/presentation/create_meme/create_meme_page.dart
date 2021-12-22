@@ -185,31 +185,32 @@ class BottomList extends StatelessWidget {
     return Container(
       color: Colors.white,
       child: StreamBuilder<List<MemeTextWithSelection>>(
-          stream: bloc.observeMemeTextWithSelection(),
-          initialData: const <MemeTextWithSelection>[],
-          builder: (context, snapshot) {
-            final items = snapshot.hasData ? snapshot.data! : <MemeTextWithSelection>[];
-            return ListView.separated(
-              itemCount: items.length + 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (index == 0) {
-                  return AppButton(
-                    onTap: () => bloc.addNewText(),
-                    text: "Добавить текст",
-                    icon: Icons.add,
-                  );
-                }
-                final item = items[index - 1];
-                return BottomMemeText(item: item);
-              },
-              separatorBuilder: (BuildContext context, int index) {
-                if (index == 0) {
-                  return const SizedBox.shrink();
-                }
-                return BottomSeparator();
-              },
-            );
-          }),
+        stream: bloc.observeMemeTextWithSelection(),
+        initialData: const <MemeTextWithSelection>[],
+        builder: (context, snapshot) {
+          final items = snapshot.hasData ? snapshot.data! : <MemeTextWithSelection>[];
+          return ListView.separated(
+            itemCount: items.length + 1,
+            itemBuilder: (BuildContext context, int index) {
+              if (index == 0) {
+                return AppButton(
+                  onTap: () => bloc.addNewText(),
+                  text: "Добавить текст",
+                  icon: Icons.add,
+                );
+              }
+              final item = items[index - 1];
+              return BottomMemeText(item: item);
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              if (index == 0) {
+                return const SizedBox.shrink();
+              }
+              return BottomSeparator();
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -261,7 +262,12 @@ class BottomMemeText extends StatelessWidget {
               onTap: () {
                 showModalBottomSheet(
                   context: context,
-                  builder: (context) => FontSettingsBottomSheet(memeText: item.memeText),
+                  builder: (context) {
+                    return Provider.value(
+                      value: bloc,
+                      child: FontSettingsBottomSheet(memeText: item.memeText),
+                    );
+                  },
                 );
               },
               child: Padding(
@@ -303,47 +309,69 @@ class MemeCanvasWidget extends StatelessWidget {
                   controller: snapshot.requireData!,
                   child: Stack(
                     children: [
-                      StreamBuilder<String?>(
-                          stream: bloc.observeMemePath(),
-                          builder: (context, snapshot) {
-                            final path = snapshot.hasData ? snapshot.data : null;
-                            if (path == null) {
-                              return Container(
-                                color: Colors.white,
-                              );
-                            }
-                            return Image.file(File(path));
-                          }),
-                      StreamBuilder<List<MemeTextWithOffset>>(
-                        initialData: const <MemeTextWithOffset>[],
-                        stream: bloc.observeMemeTextWithOffsets(),
-                        builder: (context, snapshot) {
-                          final memeTextsWithOffsets =
-                              snapshot.hasData ? snapshot.data! : const <MemeTextWithOffset>[];
-                          return LayoutBuilder(
-                            builder: (context, constraints) {
-                              return GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () => bloc.deselectMemeText(),
-                                child: Stack(
-                                  children: memeTextsWithOffsets.map((memeTextWithOffset) {
-                                    return DraggableMemeText(
-                                      memeTextWithOffset: memeTextWithOffset,
-                                      parentConstraints: constraints,
-                                    );
-                                  }).toList(),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                      BackgroundWidget(),
+                      MemeTexts(),
                     ],
                   ),
                 );
               }),
         ),
       ),
+    );
+  }
+}
+
+class MemeTexts extends StatelessWidget {
+  const MemeTexts({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    return StreamBuilder<List<MemeTextWithOffset>>(
+      initialData: const <MemeTextWithOffset>[],
+      stream: bloc.observeMemeTextWithOffsets(),
+      builder: (context, snapshot) {
+        final memeTextsWithOffsets =
+            snapshot.hasData ? snapshot.data! : const <MemeTextWithOffset>[];
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: memeTextsWithOffsets.map((memeTextWithOffset) {
+                return DraggableMemeText(
+                  key: ValueKey(memeTextWithOffset.memeText.id),
+                  memeTextWithOffset: memeTextWithOffset,
+                  parentConstraints: constraints,
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class BackgroundWidget extends StatelessWidget {
+  const BackgroundWidget({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
+    return StreamBuilder<String?>(
+      stream: bloc.observeMemePath(),
+      builder: (context, snapshot) {
+        final path = snapshot.hasData ? snapshot.data : null;
+        if (path == null) {
+          return Container(
+            color: Colors.white,
+          );
+        }
+        return Image.file(File(path));
+      },
     );
   }
 }
@@ -375,7 +403,7 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
     if (widget.memeTextWithOffset.offset == null) {
       WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
         final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
-        bloc.changeMemeTextOffset(widget.memeTextWithOffset.id, Offset(left, top));
+        bloc.changeMemeTextOffset(widget.memeTextWithOffset.memeText.id, Offset(left, top));
       });
     }
   }
@@ -388,27 +416,27 @@ class _DraggableMemeTextState extends State<DraggableMemeText> {
       left: left,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => bloc.selectMemeText(widget.memeTextWithOffset.id),
+        onTap: () => bloc.selectMemeText(widget.memeTextWithOffset.memeText.id),
         onPanUpdate: (details) {
-          bloc.selectMemeText(widget.memeTextWithOffset.id);
+          bloc.selectMemeText(widget.memeTextWithOffset.memeText.id);
           setState(() {
             left = calculateLeft(details);
             top = calculateTop(details);
-            bloc.changeMemeTextOffset(widget.memeTextWithOffset.id, Offset(left, top));
+            bloc.changeMemeTextOffset(widget.memeTextWithOffset.memeText.id, Offset(left, top));
           });
         },
         child: StreamBuilder<MemeText?>(
           stream: bloc.observeSelectedMemeText(),
           builder: (context, snapshot) {
             final selectedItem = snapshot.hasData ? snapshot.data : null;
-            final selected = widget.memeTextWithOffset.id == selectedItem?.id;
+            final selected = widget.memeTextWithOffset.memeText.id == selectedItem?.id;
             return MemeTextOnCanvas(
               padding: padding,
               selected: selected,
               parentConstraints: widget.parentConstraints,
-              text: widget.memeTextWithOffset.text,
-              fontSize: 24,
-              color: Colors.black,
+              text: widget.memeTextWithOffset.memeText.text,
+              fontSize: widget.memeTextWithOffset.memeText.fontSize,
+              color: widget.memeTextWithOffset.memeText.color,
             );
           },
         ),
