@@ -42,34 +42,39 @@ class _CreateMemePageState extends State<CreateMemePage> {
   Widget build(BuildContext context) {
     return Provider.value(
       value: bloc,
-      child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          backgroundColor: AppColors.lemon,
-          foregroundColor: AppColors.darkGrey,
-          backwardsCompatibility: false,
-          title: Text("Создаем мем"),
-          bottom: EditTextBar(),
-          actions: [
-            GestureDetector(
-              onTap: () => bloc.shareMeme(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Icon(Icons.share, color: AppColors.darkGrey),
+      child: WillPopScope(
+        onWillPop: () async {
+          final goBack = await showConfirmationExitDialog(context);
+          return goBack ?? false;
+        },
+        child: Scaffold(
+          resizeToAvoidBottomInset: false,
+          appBar: AppBar(
+            backgroundColor: AppColors.lemon,
+            foregroundColor: AppColors.darkGrey,
+            title: Text("Создаем мем"),
+            bottom: EditTextBar(),
+            actions: [
+              GestureDetector(
+                onTap: () => bloc.shareMeme(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Icon(Icons.share, color: AppColors.darkGrey),
+                ),
               ),
-            ),
-            GestureDetector(
-              onTap: () => bloc.saveMeme(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Icon(Icons.save, color: AppColors.darkGrey),
-              ),
-            )
-          ],
-        ),
-        backgroundColor: Colors.white,
-        body: SafeArea(
-          child: CreateMemePageContent(),
+              GestureDetector(
+                onTap: () => bloc.saveMeme(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Icon(Icons.save, color: AppColors.darkGrey),
+                ),
+              )
+            ],
+          ),
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: CreateMemePageContent(),
+          ),
         ),
       ),
     );
@@ -79,6 +84,29 @@ class _CreateMemePageState extends State<CreateMemePage> {
   void dispose() {
     bloc.dispose();
     super.dispose();
+  }
+
+  Future<bool?> showConfirmationExitDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Хотите выйти?"),
+            actionsPadding: EdgeInsets.symmetric(horizontal: 16),
+            content: Text("Вы потеряете несохраненные изменения"),
+            actions: [
+              AppButton(
+                onTap: () => Navigator.of(context).pop(false),
+                text: "Отмена",
+                color: AppColors.darkGrey,
+              ),
+              AppButton(
+                onTap: () => Navigator.of(context).pop(true),
+                text: "Выйти",
+              ),
+            ],
+          );
+        });
   }
 }
 
@@ -193,10 +221,15 @@ class BottomList extends StatelessWidget {
             itemCount: items.length + 1,
             itemBuilder: (BuildContext context, int index) {
               if (index == 0) {
-                return AppButton(
-                  onTap: () => bloc.addNewText(),
-                  text: "Добавить текст",
-                  icon: Icons.add,
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Center(
+                    child: AppButton(
+                      onTap: () => bloc.addNewText(),
+                      text: "Добавить текст",
+                      icon: Icons.add,
+                    ),
+                  ),
                 );
               }
               final item = items[index - 1];
