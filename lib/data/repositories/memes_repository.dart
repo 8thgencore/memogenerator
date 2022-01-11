@@ -22,8 +22,7 @@ class MemesRepository {
     if (memeIndex == -1) {
       memes.add(newMeme);
     } else {
-      memes.removeAt(memeIndex);
-      memes.insert(memeIndex, newMeme);
+      memes[memeIndex] = newMeme;
     }
     return _setMemes(memes);
   }

@@ -6,7 +6,7 @@ import 'package:memogenerator/data/models/position.dart';
 
 part 'text_with_position.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class TextWithPosition extends Equatable {
   final String id;
   final String text;
@@ -14,6 +14,8 @@ class TextWithPosition extends Equatable {
   final double? fontSize;
   @JsonKey(toJson: colorToJson, fromJson: colorFromJson)
   final Color? color;
+  @JsonKey(toJson: fontWeightToJson, fromJson: fontWeightFromJson)
+  final FontWeight? fontWeight;
 
   TextWithPosition({
     required this.id,
@@ -21,14 +23,16 @@ class TextWithPosition extends Equatable {
     required this.position,
     required this.fontSize,
     required this.color,
+    required this.fontWeight,
   });
 
-  factory TextWithPosition.fromJson(Map<String, dynamic> json) => _$TextWithPositionFromJson(json);
+  factory TextWithPosition.fromJson(final Map<String, dynamic> json) =>
+      _$TextWithPositionFromJson(json);
 
   Map<String, dynamic> toJson() => _$TextWithPositionToJson(this);
 
   @override
-  List<Object?> get props => [id, text, position, fontSize, color];
+  List<Object?> get props => [id, text, position, fontSize, color, fontWeight];
 }
 
 String? colorToJson(final Color? color) {
@@ -39,4 +43,13 @@ Color? colorFromJson(final String? colorString) {
   if (colorString == null) return null;
   final intColor = int.tryParse(colorString, radix: 16);
   return intColor == null ? null : Color(intColor);
+}
+
+int? fontWeightToJson(final FontWeight? fontWeight) {
+  return fontWeight == null ? null : fontWeight.index;
+}
+
+FontWeight? fontWeightFromJson(final int? fontWeightIndex) {
+  if (fontWeightIndex == null) return null;
+  return FontWeight.values.firstWhere((fontWeight) => fontWeight.index == fontWeightIndex);
 }

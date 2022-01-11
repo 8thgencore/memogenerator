@@ -99,15 +99,26 @@ class CreateMemeBloc {
         );
   }
 
-  void changeFontSetting(final String textId, final Color color, final double fontSize) {
+  void changeFontSetting(
+    final String textId,
+    final Color color,
+    final double fontSize,
+    final FontWeight fontWeight,
+  ) {
     final copiedList = [...memeTextsSubject.value];
     final oldMemeText = copiedList.firstWhereOrNull((memeText) => memeText.id == textId);
     if (oldMemeText == null) {
       return;
     }
     copiedList.remove(oldMemeText);
-    copiedList.add(oldMemeText.copyWithChangedFontSettings(color, fontSize));
+    copiedList.add(oldMemeText.copyWithChangedFontSettings(color, fontSize, fontWeight));
     memeTextsSubject.add(copiedList);
+  }
+
+  void deleteMemeText(String textId) {
+    final updatedMemeTexts = [...memeTextsSubject.value];
+    updatedMemeTexts.removeWhere((memeText) => memeText.id == textId);
+    memeTextsSubject.add(updatedMemeTexts);
   }
 
   void saveMeme() {
@@ -127,6 +138,7 @@ class CreateMemeBloc {
         position: position,
         color: memeText.color,
         fontSize: memeText.fontSize,
+        fontWeight: memeText.fontWeight,
       );
     }).toList();
 
@@ -174,8 +186,7 @@ class CreateMemeBloc {
       return;
     }
     final oldMemeText = copiedList[index];
-    copiedList.removeAt(index);
-    copiedList.insert(index, oldMemeText.copyWithChangedText(text));
+    copiedList[index] = oldMemeText.copyWithChangedText(text);
     memeTextsSubject.add(copiedList);
   }
 

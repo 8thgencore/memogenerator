@@ -55,6 +55,7 @@ class SaveMemeInteractor {
         return _getFileNameByPath(element.path) == imageName && element is File;
       },
     );
+    // if new file
     if (oldFileWithTheSameName == null) {
       await tempFile.copy(newImagePath);
       return;
