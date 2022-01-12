@@ -33,7 +33,6 @@ class _FontSettingsBottomSheetState extends State<FontSettingBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bloc = Provider.of<CreateMemeBloc>(context, listen: false);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

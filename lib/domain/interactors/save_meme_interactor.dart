@@ -72,7 +72,7 @@ class SaveMemeInteractor {
       imageName: imageName,
       tempFile: tempFile,
       newImagePath: newImagePath,
-      memeDirectoryPath: memeDirectoryPath,
+      memeDirPath: memeDirectoryPath,
     );
   }
 
@@ -80,7 +80,7 @@ class SaveMemeInteractor {
     required final String imageName,
     required final File tempFile,
     required final String newImagePath,
-    required final String memeDirectoryPath,
+    required final String memeDirPath,
   }) async {
     final indexOfLastDot = imageName.lastIndexOf(".");
     if (indexOfLastDot == -1) {
@@ -88,13 +88,13 @@ class SaveMemeInteractor {
       return;
     }
 
-    final extension = imageName.substring(indexOfLastDot);
+    final ext = imageName.substring(indexOfLastDot);
     final imageNameWithoutExtension = imageName.substring(0, indexOfLastDot);
     final indexOfLastUnderscore = imageNameWithoutExtension.lastIndexOf("_");
     // if not underscore
     if (indexOfLastUnderscore == -1) {
       final correctedNewImagePath =
-          "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$extension";
+          "$memeDirPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$ext";
       await tempFile.copy(correctedNewImagePath);
       return;
     } else {
@@ -104,14 +104,14 @@ class SaveMemeInteractor {
       // if not suffixNumber
       if (suffixNumber == null) {
         final correctedNewImagePath =
-            "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$extension";
+            "$memeDirPath${Platform.pathSeparator}${imageNameWithoutExtension}_1$ext";
         await tempFile.copy(correctedNewImagePath);
       } else {
         // increment suffixNumber
         final imageNameWithoutSuffix =
             imageNameWithoutExtension.substring(0, indexOfLastUnderscore);
         final correctedNewImagePath =
-            "$memeDirectoryPath${Platform.pathSeparator}${imageNameWithoutSuffix}_${suffixNumber + 1}$extension";
+            "$memeDirPath${Platform.pathSeparator}${imageNameWithoutSuffix}_${suffixNumber + 1}$ext";
         await tempFile.copy(correctedNewImagePath);
       }
     }
