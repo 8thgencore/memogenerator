@@ -15,40 +15,52 @@ class MemesRepository {
 
   MemesRepository._internal(this.spData);
 
-  Future<bool> addToMemes(final Meme meme) async {
-    final rawMemes = await spData.getMemes();
-    rawMemes.add(json.encode(meme.toJson()));
-    return _setRawMemes(rawMemes);
+  // from Shared Preference to jsonString. Add new element to jsonString
+  Future<bool> addToMemes(final Meme newMeme) async {
+    final memes = await getMemes();
+    final memeIndex = memes.indexWhere((meme) => meme.id == newMeme.id);
+    if (memeIndex == -1) {
+      memes.add(newMeme);
+    } else {
+      memes[memeIndex] = newMeme;
+    }
+    return _setMemes(memes);
   }
 
+  // delete from list
   Future<bool> removeFromMemes(final String id) async {
-    final memes = await _getMemes();
+    final memes = await getMemes();
     memes.removeWhere((meme) => meme.id == id);
     return _setMemes(memes);
   }
 
+  // get object by id
   Future<Meme?> getMeme(final String id) async {
-    final memes = await _getMemes();
+    final memes = await getMemes();
     return memes.firstWhereOrNull((meme) => meme.id == id);
   }
 
+  // dynamic get List
   Stream<List<Meme>> observeMemes() async* {
-    yield await _getMemes();
+    yield await getMemes();
     await for (final _ in updater) {
-      yield await _getMemes();
+      yield await getMemes();
     }
   }
 
-  Future<List<Meme>> _getMemes() async {
+  // from Shared Preference to List
+  Future<List<Meme>> getMemes() async {
     final rawMemes = await spData.getMemes();
     return rawMemes.map((rawMeme) => Meme.fromJson(json.decode(rawMeme))).toList();
   }
 
+  // List to jsonString
   Future<bool> _setMemes(final List<Meme> memes) async {
     final rawMemes = memes.map((meme) => json.encode(meme.toJson())).toList();
     return _setRawMemes(rawMemes);
   }
 
+  // jsonString to Shared Preference
   Future<bool> _setRawMemes(final List<String> rawMemes) {
     updater.add(null);
     return spData.setMemes(rawMemes);
