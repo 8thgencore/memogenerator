@@ -6,8 +6,7 @@ class SharedPreferenceData {
 
   static SharedPreferenceData? _instance;
 
-  factory SharedPreferenceData.getInstance() =>
-      _instance ??= SharedPreferenceData._internal();
+  factory SharedPreferenceData.getInstance() => _instance ??= SharedPreferenceData._internal();
 
   SharedPreferenceData._internal();
 
@@ -17,8 +16,7 @@ class SharedPreferenceData {
   Future<List<String>> getMemes() => getItems(memeKey);
 
   // Templates
-  Future<bool> setTemplates(final List<String> templates) =>
-      setItems(templateKey, templates);
+  Future<bool> setTemplates(final List<String> templates) => setItems(templateKey, templates);
 
   Future<List<String>> getTemplates() => getItems(templateKey);
 

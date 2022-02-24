@@ -244,8 +244,7 @@ class TemplateGridItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.darkGrey, width: 1),
         ),
-        child:
-            imageFile.existsSync() ? Image.file(imageFile) : Text(template.id),
+        child: imageFile.existsSync() ? Image.file(imageFile) : Text(template.id),
       ),
     );
   }

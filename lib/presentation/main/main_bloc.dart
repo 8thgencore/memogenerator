@@ -19,11 +19,10 @@ class MainBloc {
         (memes, docsDirectory) => MemesWithDocsPath(memes, docsDirectory.path));
   }
 
-  Stream<List<TemplateFull>> observeTemplates () {
+  Stream<List<TemplateFull>> observeTemplates() {
     return Rx.combineLatest2<List<Template>, Directory, List<TemplateFull>>(
         TemplatesRepository.getInstance().observeTemplates(),
-        getApplicationDocumentsDirectory().asStream(),
-        (templates, docsDirectory) {
+        getApplicationDocumentsDirectory().asStream(), (templates, docsDirectory) {
       return templates.map((template) {
         final fullImagePath =
             "${docsDirectory.absolute.path}${Platform.pathSeparator}${SaveTemplateInteractor.templatesPathName}${Platform.pathSeparator}${template.imageUrl}";
@@ -37,8 +36,11 @@ class MainBloc {
 
   Future<String?> selectMeme() async {
     final xFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    // TODO save to templates
-    return xFile?.path;
+    final imagePath = xFile?.path;
+    if (imagePath != null) {
+      await SaveTemplateInteractor.getInstance().saveTemplate(imagePath: imagePath);
+    }
+    return imagePath;
   }
 
   void dispose() {}
