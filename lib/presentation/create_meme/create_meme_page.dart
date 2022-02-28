@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:memogenerator/presentation/create_meme/create_meme_bloc.dart';
 import 'package:memogenerator/presentation/create_meme/font_settings_bottom_sheet.dart';
@@ -60,20 +59,8 @@ class _CreateMemePageState extends State<CreateMemePage> {
             title: Text("Создаем мем"),
             bottom: EditTextBar(),
             actions: [
-              GestureDetector(
-                onTap: () => bloc.shareMeme(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Icon(Icons.share, color: AppColors.darkGrey),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => bloc.saveMeme(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Icon(Icons.save, color: AppColors.darkGrey),
-                ),
-              )
+              AnimatedIconButton(onTap: () => bloc.shareMeme(), icon: Icons.share),
+              AnimatedIconButton(onTap: () => bloc.saveMeme(), icon: Icons.save),
             ],
           ),
           backgroundColor: Colors.white,
@@ -112,6 +99,44 @@ class _CreateMemePageState extends State<CreateMemePage> {
           ],
         );
       },
+    );
+  }
+}
+
+class AnimatedIconButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final IconData icon;
+
+  const AnimatedIconButton({
+    Key? key,
+    required this.onTap,
+    required this.icon,
+  }) : super(key: key);
+
+  @override
+  State<AnimatedIconButton> createState() => _AnimatedIconButtonState();
+}
+
+class _AnimatedIconButtonState extends State<AnimatedIconButton> {
+  double scale = 1.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        setState(() => scale = 1.5);
+        widget.onTap();
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: AnimatedScale(
+          duration: Duration(microseconds: 300),
+          scale: scale,
+          curve: Curves.bounceInOut,
+          child: Icon(widget.icon, color: AppColors.darkGrey, size: 24),
+          onEnd: () => setState(() => scale = 1.0),
+        ),
+      ),
     );
   }
 }
@@ -363,27 +388,24 @@ class MemeCanvasWidget extends StatelessWidget {
       color: AppColors.darkGrey38,
       padding: const EdgeInsets.all(8),
       alignment: Alignment.topCenter,
-      child: AspectRatio(
-        aspectRatio: 1,
-        child: GestureDetector(
-          onTap: () => bloc.deselectMemeText(),
-          child: StreamBuilder<ScreenshotController?>(
-              stream: bloc.observeScreenshotController(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return const SizedBox.shrink();
-                }
-                return Screenshot(
-                  controller: snapshot.requireData!,
-                  child: Stack(
-                    children: [
-                      BackgroundWidget(),
-                      MemeTexts(),
-                    ],
-                  ),
-                );
-              }),
-        ),
+      child: GestureDetector(
+        onTap: () => bloc.deselectMemeText(),
+        child: StreamBuilder<ScreenshotController?>(
+            stream: bloc.observeScreenshotController(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const SizedBox.shrink();
+              }
+              return Screenshot(
+                controller: snapshot.requireData!,
+                child: Stack(
+                  children: [
+                    BackgroundWidget(),
+                    MemeTexts(),
+                  ],
+                ),
+              );
+            }),
       ),
     );
   }
@@ -438,7 +460,9 @@ class BackgroundWidget extends StatelessWidget {
             color: Colors.white,
           );
         }
-        return Image.file(File(path));
+        return Center(
+          child: Image.file(File(path)),
+        );
       },
     );
   }
