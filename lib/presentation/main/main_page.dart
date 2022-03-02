@@ -157,8 +157,56 @@ class CreatedMemesGrid extends StatelessWidget {
           crossAxisSpacing: 8,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           children: items.map((item) {
-            return MemeGridItem(meme: item, docsPath: docsPath);
+            return Stack(
+              children: [
+                MemeGridItem(meme: item, docsPath: docsPath),
+                WillPopScope(
+                  onWillPop: () async {
+                    final goBack = await showConfirmation(context);
+                    return goBack ?? false;
+                  },
+                  child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shape: CircleBorder(),
+                        primary: AppColors.darkGrey38,
+                      ),
+                      child: Icon(
+                        Icons.delete_outline,
+                        size: 18,
+                      ),
+                      onPressed: () async => bloc.deleteMeme(item.id),
+                    ),
+                  ),
+                ),
+              ],
+            );
           }).toList(),
+        );
+      },
+    );
+  }
+
+  Future<bool?> showConfirmation(BuildContext context) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Точно хотите выйти?"),
+          actionsPadding: EdgeInsets.symmetric(horizontal: 16),
+          content: Text("Мемы сами себя не сделают"),
+          actions: [
+            AppButton(
+              onTap: () => Navigator.of(context).pop(false),
+              text: "Остаться",
+              color: AppColors.darkGrey,
+            ),
+            AppButton(
+              onTap: () => Navigator.of(context).pop(true),
+              text: "Выйти",
+            ),
+          ],
         );
       },
     );
