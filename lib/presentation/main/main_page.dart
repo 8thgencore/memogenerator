@@ -19,12 +19,20 @@ class MainPage extends StatefulWidget {
   _MainPageState createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage> {
+class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   late MainBloc bloc;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = new TabController(
+      vsync: this,
+      length: 2,
+      initialIndex: 0,
+    )..addListener(() {
+        setState(() {});
+      });
     bloc = MainBloc();
   }
 
@@ -56,6 +64,7 @@ class _MainPageState extends State<MainPage> {
                 ),
               ),
               bottom: TabBar(
+                controller: _tabController,
                 labelColor: AppColors.darkGrey,
                 indicatorColor: AppColors.fuchsia,
                 indicatorWeight: 3,
@@ -65,9 +74,12 @@ class _MainPageState extends State<MainPage> {
                 ],
               ),
             ),
-            floatingActionButton: CreateMemFab(),
+            floatingActionButton: _tabController.index == 0
+                ? CreateMemFab(text: "Мем")
+                : CreateMemFab(text: "Шаблон"),
             backgroundColor: Colors.white,
             body: TabBarView(
+              controller: _tabController,
               children: [
                 SafeArea(child: CreatedMemesGrid()),
                 SafeArea(child: TemplatesGrid()),
@@ -106,12 +118,18 @@ class _MainPageState extends State<MainPage> {
   @override
   void dispose() {
     bloc.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 }
 
 class CreateMemFab extends StatelessWidget {
-  const CreateMemFab({Key? key}) : super(key: key);
+  const CreateMemFab({
+    required this.text,
+    Key? key,
+  }) : super(key: key);
+
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +150,7 @@ class CreateMemFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text("Мем"),
+      label: Text(text.toUpperCase()),
     );
   }
 }
