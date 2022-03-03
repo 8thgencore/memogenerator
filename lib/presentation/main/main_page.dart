@@ -132,7 +132,7 @@ class CreateMemFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text("Создать"),
+      label: Text("Мем"),
     );
   }
 }
@@ -157,54 +157,69 @@ class CreatedMemesGrid extends StatelessWidget {
           crossAxisSpacing: 8,
           padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           children: items.map((item) {
-            return Stack(
-              children: [
-                MemeGridItem(meme: item, docsPath: docsPath),
-                WillPopScope(
-                  onWillPop: () async {
-                    final goBack = await showConfirmation(context);
-                    return goBack ?? false;
-                  },
-                  child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: CircleBorder(),
-                        primary: AppColors.darkGrey38,
-                      ),
-                      child: Icon(
-                        Icons.delete_outline,
-                        size: 18,
-                      ),
-                      onPressed: () async => bloc.deleteMeme(item.id),
-                    ),
-                  ),
-                ),
-              ],
-            );
+            return MemeGridItem(meme: item, docsPath: docsPath);
           }).toList(),
         );
       },
     );
   }
+}
 
-  Future<bool?> showConfirmation(BuildContext context) {
+class DeleteElevatedButton extends StatelessWidget {
+  const DeleteElevatedButton({
+    required this.id,
+    required this.object,
+    Key? key,
+  }) : super(key: key);
+
+  final String id;
+  final String object;
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    return Align(
+      alignment: Alignment.bottomRight,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          shape: CircleBorder(),
+          primary: AppColors.darkGrey38,
+        ),
+        child: Icon(
+          Icons.delete_outline,
+          size: 18,
+        ),
+        onPressed: () async {
+          final delete = await showAlertDialog(context, object) ?? false;
+          if (delete == true) {
+            if (object == "мем") {
+              bloc.deleteMeme(id);
+            } else {
+              bloc.deleteTemplate(id);
+            }
+          }
+        },
+      ),
+    );
+  }
+
+  Future<bool?> showAlertDialog(BuildContext context, String object) {
     return showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("Точно хотите выйти?"),
+          title: Text("Удалить $object?"),
           actionsPadding: EdgeInsets.symmetric(horizontal: 16),
-          content: Text("Мемы сами себя не сделают"),
+          content: Text("Выбранный $object будет удален навсегда"),
           actions: [
             AppButton(
               onTap: () => Navigator.of(context).pop(false),
-              text: "Остаться",
+              text: "Отмена",
               color: AppColors.darkGrey,
             ),
             AppButton(
               onTap: () => Navigator.of(context).pop(true),
-              text: "Выйти",
+              text: "Удалить",
             ),
           ],
         );
@@ -226,23 +241,28 @@ class MemeGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageFile = File("$docsPath${Platform.pathSeparator}${meme.id}.png");
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) {
-              return CreateMemePage(id: meme.id);
-            },
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) {
+                  return CreateMemePage(id: meme.id);
+                },
+              ),
+            );
+          },
+          child: Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.darkGrey, width: 1),
+            ),
+            child: imageFile.existsSync() ? Image.file(imageFile) : Text(meme.id),
           ),
-        );
-      },
-      child: Container(
-        alignment: Alignment.centerLeft,
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.darkGrey, width: 1),
         ),
-        child: imageFile.existsSync() ? Image.file(imageFile) : Text(meme.id),
-      ),
+        DeleteElevatedButton(id: meme.id, object: "мем"),
+      ],
     );
   }
 }
@@ -285,23 +305,28 @@ class TemplateGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final imageFile = File(template.fullImagePath);
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => CreateMemePage(
-              selectedMemePath: template.fullImagePath,
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => CreateMemePage(
+                  selectedMemePath: template.fullImagePath,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.darkGrey, width: 1),
             ),
+            child: imageFile.existsSync() ? Image.file(imageFile) : Text(template.id),
           ),
-        );
-      },
-      child: Container(
-        alignment: Alignment.centerLeft,
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.darkGrey, width: 1),
         ),
-        child: imageFile.existsSync() ? Image.file(imageFile) : Text(template.id),
-      ),
+        DeleteElevatedButton(id: template.id, object: "шаблон"),
+      ],
     );
   }
 }
