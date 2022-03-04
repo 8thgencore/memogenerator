@@ -5,8 +5,6 @@ import 'package:memogenerator/data/models/meme.dart';
 import 'package:memogenerator/data/models/template.dart';
 import 'package:memogenerator/data/repositories/memes_repository.dart';
 import 'package:memogenerator/data/repositories/templates_repository.dart';
-import 'package:memogenerator/domain/interactors/delete_meme_interactor.dart';
-import 'package:memogenerator/domain/interactors/delete_template_interactor.dart';
 import 'package:memogenerator/domain/interactors/save_template_interactor.dart';
 import 'package:memogenerator/presentation/main/memes_with_docs_path.dart';
 import 'package:memogenerator/presentation/main/models/template_full.dart';
@@ -46,11 +44,11 @@ class MainBloc {
   }
 
   void deleteMeme(String memeId) async {
-    await DeleteMemeInteractor.getInstance().deleteMeme(id: memeId);
+    await MemesRepository.getInstance().removeFromMemes(memeId);
   }
 
   void deleteTemplate(String templateId) async {
-    await DeleteTemplateInteractor.getInstance().deleteTemplate(id: templateId);
+    await TemplatesRepository.getInstance().removeFromTemplates(templateId);
   }
 
   void dispose() {}
