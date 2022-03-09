@@ -20,10 +20,7 @@ class SharedPreferenceData {
 
   Future<List<String>> getTemplates() => getItems(templateKey);
 
-  Future<bool> setItems(
-    final String key,
-    final List<String> items,
-  ) async {
+  Future<bool> setItems(final String key, final List<String> items) async {
     final sp = await SharedPreferences.getInstance();
     final result = sp.setStringList(key, items);
     return result;

@@ -23,17 +23,19 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   late MainBloc bloc;
   late TabController _tabController;
 
+  double tabIndex = 0;
+
   @override
   void initState() {
     super.initState();
-    _tabController = new TabController(
-      vsync: this,
-      length: 2,
-      initialIndex: 0,
-    )..addListener(() {
+    bloc = MainBloc();
+    _tabController = new TabController(vsync: this, length: 2)
+      ..addListener(() {
         setState(() {});
       });
-    bloc = MainBloc();
+    _tabController.animation!.addListener(() {
+      setState(() => tabIndex = _tabController.animation!.value);
+    });
   }
 
   @override
@@ -74,9 +76,15 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                 ],
               ),
             ),
-            floatingActionButton: _tabController.index == 0
-                ? CreateMemFab(text: "Мем")
-                : CreateMemFab(text: "Шаблон"),
+            floatingActionButton: tabIndex <= 0.5
+                ? Transform.scale(
+                    scale: 1 - tabIndex / 0.5,
+                    child: CreateMemFab(),
+                  )
+                : Transform.scale(
+                    scale: (tabIndex - 0.5) / 0.5,
+                    child: CreateTemplateFab(),
+                  ),
             backgroundColor: Colors.white,
             body: TabBarView(
               controller: _tabController,
@@ -124,12 +132,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
 }
 
 class CreateMemFab extends StatelessWidget {
-  const CreateMemFab({
-    required this.text,
-    Key? key,
-  }) : super(key: key);
-
-  final String text;
+  const CreateMemFab({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +153,24 @@ class CreateMemFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text(text.toUpperCase()),
+      label: Text("Мем"),
+    );
+  }
+}
+
+class CreateTemplateFab extends StatelessWidget {
+  const CreateTemplateFab({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final bloc = Provider.of<MainBloc>(context, listen: false);
+    return FloatingActionButton.extended(
+      onPressed: () async {
+        await bloc.selectMeme();
+      },
+      backgroundColor: AppColors.fuchsia,
+      icon: Icon(Icons.add, color: Colors.white),
+      label: Text("Шаблон"),
     );
   }
 }
