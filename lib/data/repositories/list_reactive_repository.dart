@@ -30,7 +30,7 @@ abstract class ListReactiveRepository<T> {
   }
 
   // dynamic get List
-  Stream<List<T>> observeMemes() async* {
+  Stream<List<T>> observeItems() async* {
     yield await getItems();
     await for (final _ in updater) {
       yield await getItems();
