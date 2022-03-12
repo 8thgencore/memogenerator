@@ -28,7 +28,7 @@ class MainBloc {
 
   Stream<List<TemplateFull>> observeTemplates() {
     return Rx.combineLatest2<List<Template>, Directory, List<TemplateFull>>(
-        TemplatesRepository.getInstance().observeTemplates(),
+        TemplatesRepository.getInstance().observeMemes(),
         getApplicationDocumentsDirectory().asStream(), (templates, docsDirectory) {
       return templates.map((template) {
         final fullImagePath =
@@ -51,11 +51,11 @@ class MainBloc {
   }
 
   void deleteMeme(String memeId) async {
-    await MemesRepository.getInstance().removeFromMemes(memeId);
+    await MemesRepository.getInstance().removeFromItemsById(memeId);
   }
 
   void deleteTemplate(String templateId) async {
-    await TemplatesRepository.getInstance().removeFromTemplates(templateId);
+    await TemplatesRepository.getInstance().removeFromItemsById(templateId);
   }
 
   void dispose() {}
