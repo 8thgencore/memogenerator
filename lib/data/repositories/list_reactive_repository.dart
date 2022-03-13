@@ -37,13 +37,13 @@ abstract class ListReactiveRepository<T> {
     }
   }
 
-  Future<bool> addItems(final T item) async {
+  Future<bool> addItem(final T item) async {
     final items = await getItems();
     items.add(item);
     return setItems(items);
   }
 
-  Future<bool> removeItems(final T item) async {
+  Future<bool> removeItem(final T item) async {
     final items = await getItems();
     items.remove(item);
     return setItems(items);
