@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:memogenerator/data/models/text_with_position.dart';

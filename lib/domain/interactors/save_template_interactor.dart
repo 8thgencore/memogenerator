@@ -13,7 +13,7 @@ class SaveTemplateInteractor {
   SaveTemplateInteractor._internal();
 
   Future<bool> saveTemplate({
-    required final String imagePath,
+    required final String imagePath
   }) async {
     final newImagePath = await CopyUniqueFileInteractor.getInstance().copyUniqueFile(
       directoryWithFiles: templatesPathName,

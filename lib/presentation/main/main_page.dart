@@ -20,7 +20,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin {
   late MainBloc bloc;
-  late TabController _tabController;
+  late TabController tabController;
 
   double tabIndex = 0;
 
@@ -28,12 +28,9 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     bloc = MainBloc();
-    _tabController = new TabController(vsync: this, length: 2)
-      ..addListener(() {
-        setState(() {});
-      });
-    _tabController.animation!.addListener(() {
-      setState(() => tabIndex = _tabController.animation!.value);
+    tabController = TabController(vsync: this, length: 2);
+    tabController.animation!.addListener(() {
+      setState(() => tabIndex = tabController.animation!.value);
     });
   }
 
@@ -65,7 +62,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                 ),
               ),
               bottom: TabBar(
-                controller: _tabController,
+                controller: tabController,
                 labelColor: AppColors.darkGrey,
                 indicatorColor: AppColors.fuchsia,
                 indicatorWeight: 3,
@@ -86,7 +83,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
                   ),
             backgroundColor: Colors.white,
             body: TabBarView(
-              controller: _tabController,
+              controller: tabController,
               children: [
                 SafeArea(child: CreatedMemesGrid()),
                 SafeArea(child: TemplatesGrid()),
@@ -125,7 +122,7 @@ class _MainPageState extends State<MainPage> with SingleTickerProviderStateMixin
   @override
   void dispose() {
     bloc.dispose();
-    _tabController.dispose();
+    tabController.dispose();
     super.dispose();
   }
 }
@@ -152,7 +149,7 @@ class CreateMemFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text("Мем"),
+      label: const Text("Мем"),
     );
   }
 }
@@ -169,7 +166,7 @@ class CreateTemplateFab extends StatelessWidget {
       },
       backgroundColor: AppColors.fuchsia,
       icon: Icon(Icons.add, color: Colors.white),
-      label: Text("Шаблон"),
+      label: const Text("Шаблон"),
     );
   }
 }
@@ -365,7 +362,6 @@ class TemplateGridItem extends StatelessWidget {
               itemName: 'шаблон',
             ),
           ),
-          // DeleteElevatedButton(id: template.id, object: "шаблон"),
         ],
       ),
     );

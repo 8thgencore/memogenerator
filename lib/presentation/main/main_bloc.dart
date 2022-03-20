@@ -28,17 +28,16 @@ class MainBloc {
 
   Stream<List<TemplateFull>> observeTemplates() {
     return Rx.combineLatest2<List<Template>, Directory, List<TemplateFull>>(
-        TemplatesRepository.getInstance().observeItems(),
-        getApplicationDocumentsDirectory().asStream(), (templates, docsDirectory) {
-      return templates.map((template) {
-        final fullImagePath =
-            "${docsDirectory.absolute.path}${Platform.pathSeparator}${SaveTemplateInteractor.templatesPathName}${Platform.pathSeparator}${template.imageUrl}";
-        return TemplateFull(
-          id: template.id,
-          fullImagePath: fullImagePath,
-        );
-      }).toList();
-    });
+      TemplatesRepository.getInstance().observeItems(),
+      getApplicationDocumentsDirectory().asStream(),
+      (templates, docsDirectory) {
+        return templates.map((template) {
+          final fullImagePath =
+              "${docsDirectory.absolute.path}${Platform.pathSeparator}${SaveTemplateInteractor.templatesPathName}${Platform.pathSeparator}${template.imageUrl}";
+          return TemplateFull(id: template.id, fullImagePath: fullImagePath);
+        }).toList();
+      },
+    );
   }
 
   Future<String?> selectMeme() async {

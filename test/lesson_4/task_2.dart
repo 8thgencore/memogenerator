@@ -174,7 +174,7 @@ void runTestLesson4Task2() {
           "Получаем список сохранненых шаблонов. Ожидаем, что список существует");
 
       final savedTemplates = values["flutter.template_key"];
-
+      fancyPrint(savedTemplates);
       expect(
         savedTemplates,
         isNotNull,
